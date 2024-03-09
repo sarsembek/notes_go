@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/yourusername/yourprojectname/internal/store"
+	"github.com/sarsembek/notes_go/internal/store"
 )
 
 func SetupRoutes(e *echo.Echo, store *store.Store) {

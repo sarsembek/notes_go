@@ -2,7 +2,7 @@ package store
 
 import (
 	"context"
-	"github.com/yourusername/yourprojectname/internal/model"
+	"github.com/sarsembek/notes_go/internal/model"
 )
 
 // CreateNote добавляет новую заметку в базу данных
@@ -31,4 +31,31 @@ func (s *Store) GetNotes(ctx context.Context) ([]model.Note, error) {
 	}
 
 	return notes, nil
+}
+
+// GetNoteByID возвращает заметку по её ID
+func (s *Store) GetNoteByID(ctx context.Context, id int) (*model.Note, error) {
+	note := &model.Note{}
+
+	query := `SELECT id, user_id, title, content FROM notes WHERE id = $1`
+	row := s.db.QueryRowContext(ctx, query, id)
+	if err := row.Scan(&note.ID, &note.UserID, &note.Title, &note.Content); err != nil {
+		return nil, err
+	}
+
+	return note, nil
+}
+
+// UpdateNote обновляет заметку с заданным ID
+func (s *Store) UpdateNote(ctx context.Context, id int, note *model.Note) error {
+    query := `UPDATE notes SET title = $1, content = $2, updated_at = NOW() WHERE id = $3`
+    _, err := s.db.ExecContext(ctx, query, note.Title, note.Content, id)
+    return err
+}
+
+// DeleteNote удаляет заметку по её ID
+func (s *Store) DeleteNote(ctx context.Context, id int) error {
+	query := `DELETE FROM notes WHERE id = $1`
+	_, err := s.db.ExecContext(ctx, query, id)
+	return err
 }
