@@ -1,20 +1,29 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/sarsembek/notes_go/internal/api"
-	"github.com/sarsembek/notes_go/internal/store"
+    "log"
+    "net/http"
+
+    "github.com/gorilla/mux"
+    "pokemon_project/cmd/handlers"
+    "pokemon_project/pkg/db"
 )
 
 func main() {
-	e := echo.New()
+    // Initialize the database
+    db.InitDB()
+    // defer db.CloseDB()
 
-	dsn := "host=localhost user=postgres password=postgres dbname=notes sslmode=disable"
+    // Create a new router
+    r := mux.NewRouter()
 
-	store := store.NewStore(dsn)
+    // Define routes
+    r.HandleFunc("/pokemon", handlers.CreatePokemon).Methods("POST")
+	r.HandleFunc("/pokemon", handlers.GetAllPokemon).Methods("GET")
+    r.HandleFunc("/pokemon/{id}", handlers.GetPokemon).Methods("GET")
+    r.HandleFunc("/pokemon/{id}", handlers.UpdatePokemon).Methods("PUT")
+    r.HandleFunc("/pokemon/{id}", handlers.DeletePokemon).Methods("DELETE")
 
-	// Инициализация маршрутов
-	api.SetupRoutes(e, store)
-
-	e.Logger.Fatal(e.Start(":8080"))
+    // Start the server
+    log.Fatal(http.ListenAndServe(":8080", r))
 }
