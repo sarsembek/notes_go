@@ -12,7 +12,6 @@ import (
 func main() {
     // Initialize the database
     db.InitDB()
-    // defer db.CloseDB()
 
     // Create a new router
     r := mux.NewRouter()
