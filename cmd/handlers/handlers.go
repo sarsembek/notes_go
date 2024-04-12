@@ -22,13 +22,27 @@ func CreatePokemon(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllPokemon(w http.ResponseWriter, r *http.Request) {
-    pokemons, err := db.GetAllPokemon()
+    query := r.URL.Query()
+    page, _ := strconv.Atoi(query.Get("page"))
+    limit, _ := strconv.Atoi(query.Get("limit"))
+    sortBy := query.Get("sortBy")
+    filterBy := query.Get("filterBy")
+
+    if page == 0 {
+        page = 1
+    }
+    if limit == 0 {
+        limit = 10
+    }
+
+    pokemons, err := db.GetPokemonWithPagination(page, limit, sortBy, filterBy)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
     json.NewEncoder(w).Encode(pokemons)
 }
+
 
 
 func GetPokemon(w http.ResponseWriter, r *http.Request) {

@@ -109,6 +109,57 @@ func GetPokemonByID(id int) (model.Pokemon, error) {
 	return pokemon, nil
 }
 
+func GetPokemonWithPagination(page, limit int, sortBy, filterBy string) ([]model.Pokemon, error) {
+    var pokemons []model.Pokemon
+
+    query := "SELECT id, name, species, type1, type2, height, weight, base_experience, capture_rate, hp, attack, defense, special_attack, special_defense, speed FROM Pokemon"
+
+    if filterBy != "" {
+        query += " WHERE name LIKE '%" + filterBy + "%'"
+    }
+
+    if sortBy != "" {
+        query += " ORDER BY " + sortBy
+    }
+
+    query += " LIMIT $1 OFFSET $2"
+    offset := (page - 1) * limit
+
+    rows, err := DB.Query(query, limit, offset)
+    if err != nil {
+        return pokemons, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var p model.Pokemon
+        if err := rows.Scan(
+            &p.ID,
+            &p.Name,
+            &p.Species,
+            &p.Type1,
+            &p.Type2,
+            &p.Height,
+            &p.Weight,
+            &p.BaseExp,
+            &p.CaptureRate,
+            &p.HP,
+            &p.Attack,
+            &p.Defense,
+            &p.SpAttack,
+            &p.SpDefense,
+            &p.Speed,
+        ); err != nil {
+            return pokemons, err
+        }
+        pokemons = append(pokemons, p)
+    }
+    if err := rows.Err(); err != nil {
+        return pokemons, err
+    }
+    return pokemons, nil
+}
+
 func UpdatePokemonByID(id int, p model.Pokemon) error {
 	_, err := DB.Exec("UPDATE Pokemon SET name = $1, species = $2, type1 = $3, type2 = $4, height = $5, weight = $6, base_experience = $7, capture_rate = $8, hp = $9, attack = $10, defense = $11, special_attack = $12, special_defense = $13, speed = $14 WHERE id = $15",
 		p.Name,
