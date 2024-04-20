@@ -23,6 +23,37 @@ func InitDB() {
 	}
 }
 
+// CreateUser inserts a new user into the database
+func CreateUser(user model.User) error {
+	_, err := DB.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", user.Username, user.Password)
+	return err
+}
+
+// GetUserByUsername retrieves a user by username from the database
+func GetUserByUsername(username string) (*model.User, error) {
+	var user model.User
+	err := DB.QueryRow("SELECT id, username, password FROM users WHERE username = $1", username).Scan(&user.ID, &user.Username, &user.Password)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// AuthenticateUser checks if the given login credentials are valid
+func AuthenticateUser(username, password string) (bool, *model.User, error) {
+	user, err := GetUserByUsername(username)
+	if err != nil {
+		return false, nil, err
+	}
+
+	isAuthenticated, err := user.Authenticate(password)
+	if err != nil {
+		return false, nil, err
+	}
+
+	return isAuthenticated, user, nil
+}
+
 func CreatePokemon(p model.Pokemon) error {
 	_, err := DB.Exec("INSERT INTO Pokemon (name, species, type1, type2, height, weight, base_experience, capture_rate, hp, attack, defense, special_attack, special_defense, speed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)",
 		p.Name,
